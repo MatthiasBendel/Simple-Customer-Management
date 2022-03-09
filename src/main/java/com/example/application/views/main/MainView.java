@@ -3,16 +3,19 @@ package com.example.application.views.main;
 import com.example.application.Person;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 
@@ -25,16 +28,12 @@ public class MainView extends VerticalLayout {
 
     private final String nameText = "Name";
     private final String addressText = "Adresse";
-    private final String mailText = "E-Mail Adresse";
+    private final String mailText = "E-Mailadresse";
     private final String birthText = "Geburtsdatum";
 
 
     public MainView() {
-        H2 users = new H2("Kundenverwaltung");
-        HorizontalLayout header = new HorizontalLayout(users);
-        header.setAlignItems(Alignment.CENTER);
-        header.getThemeList().clear();
-        add(header);
+        add(new H2("Kundenverwaltung"));
 
         people = getExampleData();
 
@@ -74,16 +73,19 @@ public class MainView extends VerticalLayout {
 
         TextField nameField = new TextField(nameText);
         TextField addressField = new TextField(addressText);
-        TextField mailField = new TextField(mailText);
-        TextField birthField = new TextField(birthText);
+        EmailField mailField = new EmailField(mailText);
+        mailField.setErrorMessage("Bitte geben Sie eine gültige E-Mailadresse ein.");
+        DatePicker birthField = new DatePicker(birthText);
         dialogLayout.add(nameField);
         dialogLayout.add(addressField);
         dialogLayout.add(mailField);
         dialogLayout.add(birthField);
 
         confirmButton.addClickListener(e -> {
+            String birthFieldValue = birthField.getValue() == null ? "" :
+                    birthField.getValue().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
             Person newPerson = new Person(nameField.getValue(), addressField.getValue(), mailField.getValue(),
-                    birthField.getValue());
+                    birthFieldValue);
             people.add(newPerson);
             grid.getDataProvider().refreshAll();
             dialog.close();
