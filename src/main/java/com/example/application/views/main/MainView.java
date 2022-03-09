@@ -1,24 +1,19 @@
 package com.example.application.views.main;
 
 import com.example.application.Person;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.grid.Grid;
-
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 @PageTitle("Kundenverwaltung")
@@ -28,90 +23,103 @@ public class MainView extends VerticalLayout {
     private final Grid<Person> grid;
     private final ArrayList<Person> people;
 
-    public MainView() {
+    private final String nameText = "Name";
+    private final String addressText = "Adresse";
+    private final String mailText = "E-Mail Adresse";
+    private final String birthText = "Geburtsdatum";
 
+
+    public MainView() {
         H2 users = new H2("Kundenverwaltung");
         HorizontalLayout header = new HorizontalLayout(users);
         header.setAlignItems(Alignment.CENTER);
         header.getThemeList().clear();
         add(header);
 
+        people = getExampleData();
 
-//        // example data
-        people = new ArrayList<>();
-        people.add(new Person("Nicolaus Copernicus", "Mainstreet 1", "a-test@mail.com", "01.03.1971"));
-        people.add(new Person("Galileo Galilei", "Secondstreet 2", "b-test@mail.com", "01.04.1972"));
-        people.add(new Person("Johannes Kepler", "Secondstreet 3", "c-test@mail.com", "01.05.1973"));
-
-        // show data in grid
         grid = new Grid<>();
         grid.setItems(people);
-        grid.addColumn(Person::getName).setHeader("Name");
-        grid.addColumn(Person::getAddress).setHeader("Address");
-        grid.addColumn(Person::getMail).setHeader("Mail");
-        grid.addColumn(Person::getBirth).setHeader("Birth");
+        grid.addColumn(Person::getName).setHeader(nameText);
+        grid.addColumn(Person::getAddress).setHeader(addressText);
+        grid.addColumn(Person::getMail).setHeader(mailText);
+        grid.addColumn(Person::getBirth).setHeader(birthText);
         add(grid);
-
-        users.getStyle().set("margin", "0 auto 0 0");
 
         Button deleteButton = new Button("Entfernen", e -> createRemoveDialog().open());
         deleteButton.setEnabled(false);
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-        deleteButton.getStyle().set("margin-inline-start", "auto");
 
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
         grid.addSelectionListener(selection -> deleteButton.setEnabled(selection.getAllSelectedItems().size() != 0));
 
-        Button addButton = new Button("Hinzufügen");
+        Button addButton = new Button("Hinzufügen", e -> createAddDialog().open());
 
-        TextField nameField = new TextField("Name");
-        TextField addressField = new TextField("Adresse");
-        TextField mailField = new TextField("E-Mail Addresse");
-        TextField birthField = new TextField("Geburtsdatum");
-        Button addCustomerButton = new Button("Kunde hinzufügen");
-
-        HorizontalLayout addCustomerLayout = new HorizontalLayout();
-        addCustomerLayout.add(nameField);
-        addCustomerLayout.add(addressField);
-        addCustomerLayout.add(mailField);
-        addCustomerLayout.add(birthField);
-        addCustomerLayout.add(addCustomerButton);
-
-        addButton.addClickListener(e -> add(addCustomerLayout));
         HorizontalLayout footer = new HorizontalLayout(deleteButton, addButton);
-        footer.getStyle().set("flex-wrap", "wrap");
         add(footer);
+    }
 
-        addCustomerButton.addClickListener(e -> {
+    private ArrayList<Person> getExampleData() {
+        ArrayList<Person> people = new ArrayList<>();
+        people.add(new Person("Nicolaus Copernicus", "Mainstreet 1", "a-test@mail.com", "01.03.1971"));
+        people.add(new Person("Galileo Galilei", "Secondstreet 2", "b-test@mail.com", "01.04.1972"));
+        people.add(new Person("Johannes Kepler", "Thirdstreet 3", "c-test@mail.com", "01.05.1973"));
+        return people;
+    }
+
+    private Dialog createAddDialog() {
+        VerticalLayout dialogLayout = new VerticalLayout();
+        Button confirmButton = new Button("Hinzufügen");
+        Dialog dialog = createDialog("Eintrag hinzufügen", dialogLayout, confirmButton);
+
+        TextField nameField = new TextField(nameText);
+        TextField addressField = new TextField(addressText);
+        TextField mailField = new TextField(mailText);
+        TextField birthField = new TextField(birthText);
+        dialogLayout.add(nameField);
+        dialogLayout.add(addressField);
+        dialogLayout.add(mailField);
+        dialogLayout.add(birthField);
+
+        confirmButton.addClickListener(e -> {
             Person newPerson = new Person(nameField.getValue(), addressField.getValue(), mailField.getValue(),
                     birthField.getValue());
             people.add(newPerson);
             grid.getDataProvider().refreshAll();
-            //cleanup fields
-            nameField.setValue("");
-            addressField.setValue("");
-            mailField.setValue("");
-            birthField.setValue("");
-            remove(addCustomerLayout);
+            dialog.close();
         });
+        confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        return dialog;
     }
 
     private Dialog createRemoveDialog() {
-        Dialog dialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
-        dialog.add(dialogLayout);
+        Button confirmButton = new Button("Entfernen");
+        Dialog dialog = createDialog("Eintrag entfernen", dialogLayout, confirmButton);
+
         dialogLayout.add("Sind Sie sicher, dass der Eintrag entfernt werden soll?");
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        dialogLayout.add(buttonLayout);
-        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
-        Button confirmButton = new Button("Entfernen", e -> {
+
+        confirmButton.addClickListener(e -> {
             people.removeAll(grid.getSelectedItems());
             grid.getDataProvider().refreshAll();
             dialog.close();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-        buttonLayout.add(cancelButton, confirmButton);
         return dialog;
     }
 
+    private Dialog createDialog(String dialogHeadline, VerticalLayout innerLayout, Button confirmButton) {
+        Dialog dialog = new Dialog();
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        Button cancelButton = new Button("Abbrechen", e -> dialog.close());
+        buttonLayout.add(cancelButton, confirmButton);
+
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.add(new H3(dialogHeadline));
+        dialogLayout.add(innerLayout);
+        dialogLayout.add(buttonLayout);
+
+        dialog.add(dialogLayout);
+        return dialog;
+    }
 }

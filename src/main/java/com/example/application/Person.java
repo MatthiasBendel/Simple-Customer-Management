@@ -5,6 +5,7 @@ public class Person {
     protected String address;
     protected String mail;
     protected String birth;
+
     public Person(String name, String address, String mail, String birth) {
         this.name = name;
         this.address = address;
