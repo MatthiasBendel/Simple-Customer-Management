@@ -1,5 +1,6 @@
 package com.example.application.views.main;
 
+import com.example.application.ExampleData;
 import com.example.application.Person;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -35,7 +36,7 @@ public class MainView extends VerticalLayout {
     public MainView() {
         add(new H2("Kundenverwaltung"));
 
-        people = getExampleData();
+        people = ExampleData.getExampleData();
 
         grid = buildGrid();
         buildButtons();
@@ -64,14 +65,6 @@ public class MainView extends VerticalLayout {
         grid.addColumn(Person::getBirth).setHeader(birthText);
         add(grid);
         return grid;
-    }
-
-    private ArrayList<Person> getExampleData() {
-        ArrayList<Person> people = new ArrayList<>();
-        people.add(new Person("Nicolaus Copernicus", "Mainstreet 1", "a-test@mail.com", "01.03.1971"));
-        people.add(new Person("Galileo Galilei", "Secondstreet 2", "b-test@mail.com", "01.04.1972"));
-        people.add(new Person("Johannes Kepler", "Thirdstreet 3", "c-test@mail.com", "01.05.1973"));
-        return people;
     }
 
     private Dialog createAddDialog() {
