@@ -37,14 +37,11 @@ public class MainView extends VerticalLayout {
 
         people = getExampleData();
 
-        grid = new Grid<>();
-        grid.setItems(people);
-        grid.addColumn(Person::getName).setHeader(nameText);
-        grid.addColumn(Person::getAddress).setHeader(addressText);
-        grid.addColumn(Person::getMail).setHeader(mailText);
-        grid.addColumn(Person::getBirth).setHeader(birthText);
-        add(grid);
+        grid = buildGrid();
+        buildButtons();
+    }
 
+    private void buildButtons() {
         Button deleteButton = new Button("Entfernen", e -> createRemoveDialog().open());
         deleteButton.setEnabled(false);
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
@@ -56,6 +53,17 @@ public class MainView extends VerticalLayout {
 
         HorizontalLayout footer = new HorizontalLayout(deleteButton, addButton);
         add(footer);
+    }
+
+    private Grid<Person> buildGrid() {
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(people);
+        grid.addColumn(Person::getName).setHeader(nameText);
+        grid.addColumn(Person::getAddress).setHeader(addressText);
+        grid.addColumn(Person::getMail).setHeader(mailText);
+        grid.addColumn(Person::getBirth).setHeader(birthText);
+        add(grid);
+        return grid;
     }
 
     private ArrayList<Person> getExampleData() {
