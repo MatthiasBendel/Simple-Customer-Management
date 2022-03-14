@@ -39,21 +39,7 @@ public class MainView extends VerticalLayout {
         people = ExampleData.getExampleData();
 
         grid = buildGrid();
-        buildButtons();
-    }
-
-    private void buildButtons() {
-        Button deleteButton = new Button("Entfernen", e -> createRemoveDialog().open());
-        deleteButton.setEnabled(false);
-        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-
-        grid.setSelectionMode(Grid.SelectionMode.MULTI);
-        grid.addSelectionListener(selection -> deleteButton.setEnabled(selection.getAllSelectedItems().size() != 0));
-
-        Button addButton = new Button("Hinzufügen", e -> createAddDialog().open());
-
-        HorizontalLayout footer = new HorizontalLayout(deleteButton, addButton);
-        add(footer);
+        buildFooterButtons();
     }
 
     private Grid<Person> buildGrid() {
@@ -67,7 +53,21 @@ public class MainView extends VerticalLayout {
         return grid;
     }
 
-    private Dialog createAddDialog() {
+    private void buildFooterButtons() {
+        Button deleteButton = new Button("Entfernen", e -> createRemovePersonDialog().open());
+        deleteButton.setEnabled(false);
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.addSelectionListener(selection -> deleteButton.setEnabled(selection.getAllSelectedItems().size() != 0));
+
+        Button addButton = new Button("Hinzufügen", e -> createAddPersonDialog().open());
+
+        HorizontalLayout footer = new HorizontalLayout(deleteButton, addButton);
+        add(footer);
+    }
+
+    private Dialog createAddPersonDialog() {
         VerticalLayout dialogLayout = new VerticalLayout();
         Button confirmButton = new Button("Hinzufügen");
         Dialog dialog = createDialog("Eintrag hinzufügen", dialogLayout, confirmButton);
@@ -95,7 +95,7 @@ public class MainView extends VerticalLayout {
         return dialog;
     }
 
-    private Dialog createRemoveDialog() {
+    private Dialog createRemovePersonDialog() {
         VerticalLayout dialogLayout = new VerticalLayout();
         Button confirmButton = new Button("Entfernen");
         Dialog dialog = createDialog("Eintrag entfernen", dialogLayout, confirmButton);
