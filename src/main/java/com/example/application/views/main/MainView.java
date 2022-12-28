@@ -61,9 +61,12 @@ public class MainView extends VerticalLayout {
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
         grid.addSelectionListener(selection -> deleteButton.setEnabled(selection.getAllSelectedItems().size() != 0));
 
+        Button editButton = new Button("Bearbeiten", e -> createEditPersonDialog().open());
+        grid.addSelectionListener(selection -> editButton.setEnabled(selection.getAllSelectedItems().size() == 1));
+
         Button addButton = new Button("Hinzufügen", e -> createAddPersonDialog().open());
 
-        HorizontalLayout footer = new HorizontalLayout(deleteButton, addButton);
+        HorizontalLayout footer = new HorizontalLayout(deleteButton, editButton, addButton);
         add(footer);
     }
 
@@ -108,6 +111,40 @@ public class MainView extends VerticalLayout {
             dialog.close();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        return dialog;
+    }
+
+    private Dialog createEditPersonDialog() {
+        VerticalLayout dialogLayout = new VerticalLayout();
+        Button confirmButton = new Button("Bearbeiten");
+        Dialog dialog = createDialog("Eintrag bearbeiten", dialogLayout, confirmButton);
+
+        if (grid.getSelectedItems().size() != 1) {
+            confirmButton.setText("Okay");
+            dialogLayout.add("Bitte wählen Sie nur ein Element zum bearbeiten aus.");
+            confirmButton.addClickListener(e -> dialog.close());
+        } else {
+            TextField nameField = new TextField(nameText);
+            TextField addressField = new TextField(addressText);
+            EmailField mailField = new EmailField(mailText);
+            mailField.setErrorMessage("Bitte geben Sie eine gültige E-Mailadresse ein.");
+            DatePicker birthField = new DatePicker(birthText);
+            dialogLayout.add(nameField);
+            dialogLayout.add(addressField);
+            dialogLayout.add(mailField);
+            dialogLayout.add(birthField);
+
+            confirmButton.addClickListener(e -> {
+                String birthFieldValue = birthField.getValue() == null ? "" :
+                        birthField.getValue().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                Person newPerson = new Person(nameField.getValue(), addressField.getValue(), mailField.getValue(),
+                        birthFieldValue);
+                people.add(newPerson);
+                grid.getDataProvider().refreshAll();
+                dialog.close();
+            });
+        }
+        confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         return dialog;
     }
 
