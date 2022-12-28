@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 
-@PageTitle("Kundenverwaltung")
+@PageTitle("Personenverwaltung")
 @Route(value = "")
 public class MainView extends VerticalLayout {
 
@@ -54,14 +54,15 @@ public class MainView extends VerticalLayout {
     }
 
     private void buildFooterButtons() {
-        Button deleteButton = new Button("Entfernen", e -> createRemovePersonDialog().open());
-        deleteButton.setEnabled(false);
-        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-
         grid.setSelectionMode(Grid.SelectionMode.MULTI);
+
+        Button deleteButton = new Button("Entfernen", e -> createRemovePersonDialog().open());
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        deleteButton.setEnabled(false);
         grid.addSelectionListener(selection -> deleteButton.setEnabled(selection.getAllSelectedItems().size() != 0));
 
         Button editButton = new Button("Bearbeiten", e -> createEditPersonDialog().open());
+        editButton.setEnabled(false);
         grid.addSelectionListener(selection -> editButton.setEnabled(selection.getAllSelectedItems().size() == 1));
 
         Button addButton = new Button("Hinzufügen", e -> createAddPersonDialog().open());
@@ -119,28 +120,31 @@ public class MainView extends VerticalLayout {
         Button confirmButton = new Button("Bearbeiten");
         Dialog dialog = createDialog("Eintrag bearbeiten", dialogLayout, confirmButton);
 
-        if (grid.getSelectedItems().size() != 1) {
+        if (grid.getSelectedItems().size() != 1) {  //should not be possible anymore!
             confirmButton.setText("Okay");
             dialogLayout.add("Bitte wählen Sie nur ein Element zum bearbeiten aus.");
             confirmButton.addClickListener(e -> dialog.close());
         } else {
+            Person selectedItem = (Person) grid.getSelectedItems().toArray()[0];
             TextField nameField = new TextField(nameText);
+            nameField.setValue(selectedItem.getName());
             TextField addressField = new TextField(addressText);
+            addressField.setValue(selectedItem.getAddress());
             EmailField mailField = new EmailField(mailText);
+            mailField.setValue(selectedItem.getMail());
             mailField.setErrorMessage("Bitte geben Sie eine gültige E-Mailadresse ein.");
             DatePicker birthField = new DatePicker(birthText);
+            birthField.setValue(selectedItem.getBirth());
             dialogLayout.add(nameField);
             dialogLayout.add(addressField);
             dialogLayout.add(mailField);
             dialogLayout.add(birthField);
 
             confirmButton.addClickListener(e -> {
-                String birthFieldValue = birthField.getValue() == null ? "" :
-                        birthField.getValue().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-                Person newPerson = new Person(nameField.getValue(), addressField.getValue(), mailField.getValue(),
-                        birthFieldValue);
-                people.add(newPerson);
+                selectedItem.update(nameField.getValue(), addressField.getValue(), mailField.getValue(),
+                        birthField.getValue());
                 grid.getDataProvider().refreshAll();
+                grid.deselect(selectedItem);
                 dialog.close();
             });
         }

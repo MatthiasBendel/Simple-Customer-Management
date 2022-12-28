@@ -1,16 +1,19 @@
 package com.example.application;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 public class Person {
     protected String name;
     protected String address;
     protected String mail;
-    protected String birth;
+    protected LocalDate birth;
 
     public Person(String name, String address, String mail, String birth) {
         this.name = name;
         this.address = address;
         this.mail = mail;
-        this.birth = birth;
+        this.birth = LocalDate.parse(birth, DateTimeFormatter.ofPattern("dd.MM.yyyy")); //birth == null ? "" : birth.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
     }
 
     public String getName(){
@@ -25,7 +28,14 @@ public class Person {
         return this.mail;
     }
 
-    public String getBirth(){
+    public LocalDate getBirth(){
         return this.birth;
+    }
+
+    public void update(String name, String address, String mail, LocalDate birth) {
+        this.name = name;
+        this.address = address;
+        this.mail = mail;
+        this.birth = birth;
     }
 }
