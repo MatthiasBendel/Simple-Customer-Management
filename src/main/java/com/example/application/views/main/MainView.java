@@ -42,10 +42,19 @@ public class MainView extends VerticalLayout {
     private final String addressText = "Adresse";
     private final String mailText = "E-Mailadresse";
     private final String birthText = "Geburtsdatum";
+    private String creatorText = "Ersteller";
+    private String descriptionText = "Beschreibung";
+    private String recommendationText = "Empfehlung";
+    private String acceptedText = "Akzeptiert";
+    private String acknowledgedText = "Zur Kenntnis genommen";
+    private String ignoredText = "Ignoriert";
+    private String declinedText = "Abgelehnt";
 
 
     public MainView() {
         add(createMenuBar());
+        people = ExampleData.getExampleData();
+        showContentsGrid();
     }
 
     private MenuBar createMenuBar() {
@@ -62,42 +71,31 @@ public class MainView extends VerticalLayout {
                     hidePersonGrid();
                 showContentsGrid();
             }
-
         };
-        Div message = new Div(new Text("Clicked item: "), selected);
-        add(message);
 
         MenuItem view = menuBar.addItem("View", listener);
         SubMenu viewSubMenu = view.getSubMenu();
         viewSubMenu.addItem("Persons", listener);
         viewSubMenu.addItem("Contents", listener);
-        menuBar.addItem("Edit", listener);
+//        menuBar.addItem("Edit", listener);
 
-        MenuItem share = menuBar.addItem("Share");
-        SubMenu shareSubMenu = share.getSubMenu();
-        MenuItem onSocialMedia = shareSubMenu.addItem("On social media");
-        SubMenu socialMediaSubMenu = onSocialMedia.getSubMenu();
-        socialMediaSubMenu.addItem("Facebook", listener);
-        socialMediaSubMenu.addItem("Twitter", listener);
-        socialMediaSubMenu.addItem("Instagram", listener);
-        shareSubMenu.addItem("By email", listener);
-        shareSubMenu.addItem("Get Link", listener);
-
-        MenuItem move = menuBar.addItem("Move");
-        SubMenu moveSubMenu = move.getSubMenu();
-        moveSubMenu.addItem("To folder", listener);
-        moveSubMenu.addItem("To trash", listener);
-
-        menuBar.addItem("Duplicate", listener);
+//        MenuItem share = menuBar.addItem("Share");
+//        SubMenu shareSubMenu = share.getSubMenu();
+//        MenuItem onSocialMedia = shareSubMenu.addItem("On social media");
+//        SubMenu socialMediaSubMenu = onSocialMedia.getSubMenu();
+//        socialMediaSubMenu.addItem("Facebook", listener);
+//        socialMediaSubMenu.addItem("Twitter", listener);
+//        socialMediaSubMenu.addItem("Instagram", listener);
+//        shareSubMenu.addItem("By email", listener);
+//        shareSubMenu.addItem("Get Link", listener);
         return menuBar;
     }
 
     private void showPersonsGrid() {
         headline = new H2("Personenverwaltung");
         add(headline);
-        people = ExampleData.getExampleData();
         personGrid = buildPersonsGrid();
-        buildFooterButtons();
+        buildPersonFooterButtons();
     }
 
     private void hidePersonGrid() {
@@ -115,9 +113,8 @@ public class MainView extends VerticalLayout {
     private void showContentsGrid() {
         headline = new H2("Inhalte");
         add(headline);
-        people = ExampleData.getExampleData();
         contentGrid = buildContentsGrid();
-        buildFooterButtons();
+        buildContentsFooterButtons();
     }
 
     private Grid<Person> buildPersonsGrid() {
@@ -134,13 +131,13 @@ public class MainView extends VerticalLayout {
     private Grid<Content> buildContentsGrid() {
         Grid<Content> grid = new Grid<>();
         grid.setItems(getContents());
-        grid.addColumn(Content::creator).setHeader(nameText);
-        grid.addColumn(Content::description).setHeader(addressText);
-        grid.addColumn(Content::recommendation).setHeader(mailText);
-        grid.addColumn(Content::accepted).setHeader(birthText);
-        grid.addColumn(Content::acknowledged).setHeader(birthText);
-        grid.addColumn(Content::ignored).setHeader(birthText);
-        grid.addColumn(Content::declined).setHeader(birthText);
+        grid.addColumn(Content::creator).setHeader(creatorText);
+        grid.addColumn(Content::description).setHeader(descriptionText);
+        grid.addColumn(Content::recommendation).setHeader(recommendationText);
+        grid.addColumn(Content::accepted).setHeader(acceptedText);
+        grid.addColumn(Content::acknowledged).setHeader(acknowledgedText);
+        grid.addColumn(Content::ignored).setHeader(ignoredText);
+        grid.addColumn(Content::declined).setHeader(declinedText);
         add(grid);
         return grid;
     }
@@ -153,7 +150,7 @@ public class MainView extends VerticalLayout {
         return contents;
     }
 
-    private void buildFooterButtons() {
+    private void buildPersonFooterButtons() {
         personGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 
         Button deleteButton = new Button("Entfernen", e -> createRemovePersonDialog().open());
@@ -164,6 +161,24 @@ public class MainView extends VerticalLayout {
         Button editButton = new Button("Bearbeiten", e -> createEditPersonDialog().open());
         editButton.setEnabled(false);
         personGrid.addSelectionListener(selection -> editButton.setEnabled(selection.getAllSelectedItems().size() == 1));
+
+        Button addButton = new Button("Hinzufügen", e -> createAddPersonDialog().open());
+
+        footer = new HorizontalLayout(deleteButton, editButton, addButton);
+        add(footer);
+    }
+
+    private void buildContentsFooterButtons() {
+        contentGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+
+        Button deleteButton = new Button("Entfernen", e -> createRemovePersonDialog().open());
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        deleteButton.setEnabled(false);
+        contentGrid.addSelectionListener(selection -> deleteButton.setEnabled(selection.getAllSelectedItems().size() != 0));
+
+        Button editButton = new Button("Bearbeiten", e -> createEditPersonDialog().open());
+        editButton.setEnabled(false);
+        contentGrid.addSelectionListener(selection -> editButton.setEnabled(selection.getAllSelectedItems().size() == 1));
 
         Button addButton = new Button("Hinzufügen", e -> createAddPersonDialog().open());
 

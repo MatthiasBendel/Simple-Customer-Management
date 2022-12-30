@@ -31,8 +31,8 @@ public class Content {
             this.declined++;
     }
 
-    public Person creator() {
-        return creator;
+    public String creator() {
+        return creator.name;
     }
 
     public String description() {
