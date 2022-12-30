@@ -2,12 +2,14 @@ package com.example.application;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class Person {
     protected String name;
     protected String address;
     protected String mail;
     protected LocalDate birth;
+    public ArrayList<Content> contents = new ArrayList<>();
 
     public Person(String name, String address, String mail, String birth) {
         this.name = name;
@@ -37,5 +39,9 @@ public class Person {
         this.address = address;
         this.mail = mail;
         this.birth = birth;
+    }
+
+    public void addContent(String contentDescription) {
+        contents.add(new Content(this, contentDescription));
     }
 }

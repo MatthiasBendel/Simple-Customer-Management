@@ -2,13 +2,21 @@ package com.example.application.views.main;
 
 import com.example.application.ExampleData;
 import com.example.application.Person;
+import com.example.application.Content;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -24,8 +32,11 @@ import java.util.ArrayList;
 @Route(value = "")
 public class MainView extends VerticalLayout {
 
-    private final Grid<Person> grid;
-    private final ArrayList<Person> people;
+    private H2 headline;
+    private Grid<Person> personGrid;
+    private Grid<Content> contentGrid;
+    private HorizontalLayout footer;
+    private ArrayList<Person> people;
 
     private final String nameText = "Name";
     private final String addressText = "Adresse";
@@ -34,15 +45,82 @@ public class MainView extends VerticalLayout {
 
 
     public MainView() {
-        add(new H2("Kundenverwaltung"));
+        add(createMenuBar());
+    }
 
+    private MenuBar createMenuBar() {
+        MenuBar menuBar = new MenuBar();
+        Text selected = new Text("");
+        ComponentEventListener<ClickEvent<MenuItem>> listener = e -> {
+            selected.setText(e.getSource().getText());
+            if ("Persons".equals(selected.getText())) {
+                if (contentGrid != null)
+                    hideContentGrid();
+                showPersonsGrid();
+            } else if ("Contents".equals(selected.getText())) {
+                if (personGrid != null)
+                    hidePersonGrid();
+                showContentsGrid();
+            }
+
+        };
+        Div message = new Div(new Text("Clicked item: "), selected);
+        add(message);
+
+        MenuItem view = menuBar.addItem("View", listener);
+        SubMenu viewSubMenu = view.getSubMenu();
+        viewSubMenu.addItem("Persons", listener);
+        viewSubMenu.addItem("Contents", listener);
+        menuBar.addItem("Edit", listener);
+
+        MenuItem share = menuBar.addItem("Share");
+        SubMenu shareSubMenu = share.getSubMenu();
+        MenuItem onSocialMedia = shareSubMenu.addItem("On social media");
+        SubMenu socialMediaSubMenu = onSocialMedia.getSubMenu();
+        socialMediaSubMenu.addItem("Facebook", listener);
+        socialMediaSubMenu.addItem("Twitter", listener);
+        socialMediaSubMenu.addItem("Instagram", listener);
+        shareSubMenu.addItem("By email", listener);
+        shareSubMenu.addItem("Get Link", listener);
+
+        MenuItem move = menuBar.addItem("Move");
+        SubMenu moveSubMenu = move.getSubMenu();
+        moveSubMenu.addItem("To folder", listener);
+        moveSubMenu.addItem("To trash", listener);
+
+        menuBar.addItem("Duplicate", listener);
+        return menuBar;
+    }
+
+    private void showPersonsGrid() {
+        headline = new H2("Personenverwaltung");
+        add(headline);
         people = ExampleData.getExampleData();
-
-        grid = buildGrid();
+        personGrid = buildPersonsGrid();
         buildFooterButtons();
     }
 
-    private Grid<Person> buildGrid() {
+    private void hidePersonGrid() {
+        remove(headline);
+        remove(personGrid);
+        remove(footer);
+    }
+
+    private void hideContentGrid() {
+        remove(headline);
+        remove(contentGrid);
+        remove(footer);
+    }
+
+    private void showContentsGrid() {
+        headline = new H2("Inhalte");
+        add(headline);
+        people = ExampleData.getExampleData();
+        contentGrid = buildContentsGrid();
+        buildFooterButtons();
+    }
+
+    private Grid<Person> buildPersonsGrid() {
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
         grid.addColumn(Person::getName).setHeader(nameText);
@@ -53,21 +131,43 @@ public class MainView extends VerticalLayout {
         return grid;
     }
 
+    private Grid<Content> buildContentsGrid() {
+        Grid<Content> grid = new Grid<>();
+        grid.setItems(getContents());
+        grid.addColumn(Content::creator).setHeader(nameText);
+        grid.addColumn(Content::description).setHeader(addressText);
+        grid.addColumn(Content::recommendation).setHeader(mailText);
+        grid.addColumn(Content::accepted).setHeader(birthText);
+        grid.addColumn(Content::acknowledged).setHeader(birthText);
+        grid.addColumn(Content::ignored).setHeader(birthText);
+        grid.addColumn(Content::declined).setHeader(birthText);
+        add(grid);
+        return grid;
+    }
+
+    private ArrayList<Content> getContents() {
+        ArrayList<Content> contents = new ArrayList<>();
+        for (Person person: people) {
+            contents.addAll(person.contents);
+        }
+        return contents;
+    }
+
     private void buildFooterButtons() {
-        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        personGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 
         Button deleteButton = new Button("Entfernen", e -> createRemovePersonDialog().open());
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
         deleteButton.setEnabled(false);
-        grid.addSelectionListener(selection -> deleteButton.setEnabled(selection.getAllSelectedItems().size() != 0));
+        personGrid.addSelectionListener(selection -> deleteButton.setEnabled(selection.getAllSelectedItems().size() != 0));
 
         Button editButton = new Button("Bearbeiten", e -> createEditPersonDialog().open());
         editButton.setEnabled(false);
-        grid.addSelectionListener(selection -> editButton.setEnabled(selection.getAllSelectedItems().size() == 1));
+        personGrid.addSelectionListener(selection -> editButton.setEnabled(selection.getAllSelectedItems().size() == 1));
 
         Button addButton = new Button("Hinzufügen", e -> createAddPersonDialog().open());
 
-        HorizontalLayout footer = new HorizontalLayout(deleteButton, editButton, addButton);
+        footer = new HorizontalLayout(deleteButton, editButton, addButton);
         add(footer);
     }
 
@@ -92,7 +192,7 @@ public class MainView extends VerticalLayout {
             Person newPerson = new Person(nameField.getValue(), addressField.getValue(), mailField.getValue(),
                     birthFieldValue);
             people.add(newPerson);
-            grid.getDataProvider().refreshAll();
+            personGrid.getDataProvider().refreshAll();
             dialog.close();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -107,8 +207,8 @@ public class MainView extends VerticalLayout {
         dialogLayout.add("Sind Sie sicher, dass der Eintrag entfernt werden soll?");
 
         confirmButton.addClickListener(e -> {
-            people.removeAll(grid.getSelectedItems());
-            grid.getDataProvider().refreshAll();
+            people.removeAll(personGrid.getSelectedItems());
+            personGrid.getDataProvider().refreshAll();
             dialog.close();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
@@ -120,12 +220,12 @@ public class MainView extends VerticalLayout {
         Button confirmButton = new Button("Bearbeiten");
         Dialog dialog = createDialog("Eintrag bearbeiten", dialogLayout, confirmButton);
 
-        if (grid.getSelectedItems().size() != 1) {  //should not be possible anymore!
+        if (personGrid.getSelectedItems().size() != 1) {  //should not be possible anymore!
             confirmButton.setText("Okay");
             dialogLayout.add("Bitte wählen Sie nur ein Element zum bearbeiten aus.");
             confirmButton.addClickListener(e -> dialog.close());
         } else {
-            Person selectedItem = (Person) grid.getSelectedItems().toArray()[0];
+            Person selectedItem = (Person) personGrid.getSelectedItems().toArray()[0];
             TextField nameField = new TextField(nameText);
             nameField.setValue(selectedItem.getName());
             TextField addressField = new TextField(addressText);
@@ -143,8 +243,8 @@ public class MainView extends VerticalLayout {
             confirmButton.addClickListener(e -> {
                 selectedItem.update(nameField.getValue(), addressField.getValue(), mailField.getValue(),
                         birthField.getValue());
-                grid.getDataProvider().refreshAll();
-                grid.deselect(selectedItem);
+                personGrid.getDataProvider().refreshAll();
+                personGrid.deselect(selectedItem);
                 dialog.close();
             });
         }
