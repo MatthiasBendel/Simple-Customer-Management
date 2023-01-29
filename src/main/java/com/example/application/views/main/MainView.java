@@ -54,7 +54,7 @@ public class MainView extends VerticalLayout {
     public MainView() {
         add(createMenuBar());
         people = ExampleData.getExampleData();
-        showContentsGrid();
+        //showContentsGrid();
     }
 
     private MenuBar createMenuBar() {

@@ -10,6 +10,10 @@ public class ExampleData {
         people.add(new Person("Galileo Galilei", "Secondstreet 2", "b-test@mail.com", "01.04.1972"));
         people.add(new Person("Johannes Kepler", "Thirdstreet 3", "c-test@mail.com", "01.05.1973"));
         addContent(people);
+        try (var app = new DriverIntroductionExample()) {
+            people.add(app.findPerson("Alice"));
+            people.add(app.findPerson("David"));
+        }
         return people;
     }
 
