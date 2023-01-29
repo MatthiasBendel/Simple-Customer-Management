@@ -1,5 +1,6 @@
 package com.example.application.views.main;
 
+import com.example.application.DriverIntroductionExample;
 import com.example.application.ExampleData;
 import com.example.application.Person;
 import com.example.application.Content;
@@ -206,6 +207,9 @@ public class MainView extends VerticalLayout {
                     birthField.getValue().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
             Person newPerson = new Person(nameField.getValue(), addressField.getValue(), mailField.getValue(),
                     birthFieldValue);
+            try (var app = new DriverIntroductionExample()) {
+                app.createPerson(newPerson);
+            }
             people.add(newPerson);
             personGrid.getDataProvider().refreshAll();
             dialog.close();
