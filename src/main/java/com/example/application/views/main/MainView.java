@@ -1,9 +1,9 @@
 package com.example.application.views.main;
 
+import com.example.application.Content;
 import com.example.application.DriverIntroductionExample;
 import com.example.application.ExampleData;
 import com.example.application.Person;
-import com.example.application.Content;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
@@ -14,10 +14,11 @@ import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.messages.MessageList;
+import com.vaadin.flow.component.messages.MessageListItem;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -25,6 +26,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -56,6 +60,29 @@ public class MainView extends VerticalLayout {
         add(createMenuBar());
         people = ExampleData.getExampleData();
         //showContentsGrid();
+        showBlog();
+    }
+
+    private void showBlog() {
+
+        headline = new H2("My Blog");
+        add(headline);
+        MessageList list = new MessageList();
+
+        Instant yesterday = LocalDateTime.now().minusDays(1)
+                .toInstant(ZoneOffset.UTC);
+        ArrayList<MessageListItem> messageListItems = new ArrayList<>();
+        for (int i = 0; i < people.size(); i++) {
+            Person person = people.get(i);
+            for (int j = 0; j < person.contents.size(); j++) {
+                MessageListItem newMessage = new MessageListItem(person.contents.get(j).description(), yesterday,
+                        person.getName());
+                newMessage.setUserColorIndex(i);
+                messageListItems.add(newMessage);
+            }
+        }
+        list.setItems(messageListItems);
+        add(list);
     }
 
     private MenuBar createMenuBar() {

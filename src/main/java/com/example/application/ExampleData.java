@@ -18,7 +18,7 @@ public class ExampleData {
 
     private static void addContent(ArrayList<Person> people) {
         for (Person person: people) {
-            person.addContent("I am an Engineer");
+            person.addContent("I'm an Engineer");
         }
     }
 }
