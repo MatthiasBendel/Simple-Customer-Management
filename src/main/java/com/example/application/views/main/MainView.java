@@ -208,10 +208,31 @@ public class MainView extends VerticalLayout {
         editButton.setEnabled(false);
         contentGrid.addSelectionListener(selection -> editButton.setEnabled(selection.getAllSelectedItems().size() == 1));
 
-        Button addButton = new Button("Hinzufügen", e -> createAddPersonDialog().open());
+        Button addButton = new Button("Hinzufügen", e -> createAddContentDialog().open());
 
         footer = new HorizontalLayout(deleteButton, editButton, addButton);
         add(footer);
+    }
+
+    private Dialog createAddContentDialog() {VerticalLayout dialogLayout = new VerticalLayout();
+        Button confirmButton = new Button("Hinzufügen");
+        Dialog dialog = createDialog("Eintrag hinzufügen", dialogLayout, confirmButton);
+
+        TextField contentField = new TextField(descriptionText);
+        dialogLayout.add(contentField);
+
+        confirmButton.addClickListener(e -> {
+            Content newContent = new Content(people.get(0), contentField.getValue());
+            try (var app = new DriverIntroductionExample()) {
+                app.createContent(newContent);
+            }
+            //contentGrid.getDataProvider().refreshAll();
+            hideContentGrid();
+            showContentsGrid();
+            dialog.close();
+        });
+        confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        return dialog;
     }
 
     private Dialog createAddPersonDialog() {

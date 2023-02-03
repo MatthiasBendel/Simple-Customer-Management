@@ -12,6 +12,15 @@ public class ExampleData {
         addContent(people);
         try (var app = new DriverIntroductionExample()) {
             people.addAll(app.findPersons());
+            people.addAll(addContentToPeople(people, app.findContent()));
+        }
+        return people;
+    }
+
+    private static ArrayList<Person> addContentToPeople(ArrayList<Person> people, ArrayList<Content> contents) {
+        for (Content content: contents) {
+            System.out.println("Found content: " + content.description + " (from " + content.creator.name + ")");
+            people.add(content.creator);
         }
         return people;
     }

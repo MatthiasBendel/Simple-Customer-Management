@@ -15,6 +15,7 @@ public class Content {
     public Content(Person creator, String description) {
         this.creator = creator;
         this.description = description;
+        creator.contents.add(this);
     }
 
     public Content(Person creator, String description, double recommendation, boolean accepted, boolean acknowledged,

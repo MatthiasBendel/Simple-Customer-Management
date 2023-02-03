@@ -85,6 +85,35 @@ public class DriverIntroductionExample implements AutoCloseable {
         }
     }
 
+    public void createContent(Content content) {
+
+        // To learn more about the Cypher syntax, see https://neo4j.com/docs/cypher-manual/current/
+        // The Reference Card is also a good resource for keywords https://neo4j.com/docs/cypher-refcard/current/
+        var query = new Query(
+                """
+                MATCH (p1:Person { name: "Matthias" })
+                CREATE (c1:CONTENT { description: $description })
+                CREATE (p1)-[:CREATED]->(c1)
+                RETURN p1, c1
+                """,
+                Map.of("description", content.description));
+
+        try (var session = driver.session(SessionConfig.forDatabase("neo4j"))) {
+            // Write transactions allow the driver to handle retries and transient errors
+            var record = session.executeWrite(tx -> tx.run(query).single());
+//            System.out.printf(
+//                    "Created person between: %s, %s%n",
+//                    record.get("p1").get("name").asString(),
+//                    record.get("p2").get("name").asString());
+            System.out.println("Created person: " + record.get("p1").get("name").asString());
+            System.out.println("Created content: " + record.get("c1").get("description").asString());
+            // You should capture any errors along with the query and data for traceability
+        } catch (Neo4jException ex) {
+            LOGGER.log(Level.SEVERE, query + " raised an exception", ex);
+            throw ex;
+        }
+    }
+
     public Person findPerson(final String personName) {
         var query = new Query(
                 """
@@ -129,6 +158,29 @@ public class DriverIntroductionExample implements AutoCloseable {
         return result;
     }
 
+    public ArrayList<Content> findContent() {
+        ArrayList<Content> result = new ArrayList<>();
+        var query = new Query(
+                """
+                MATCH (c:CONTENT)
+                RETURN c.description AS description
+                """);
+
+        try (var session = driver.session(SessionConfig.forDatabase("neo4j"))) {
+            var records = session.executeRead(tx -> tx.run(query).list());
+            for(Record record : records) {
+                System.out.printf("Found content: %s%n", record.get("description").asString());
+                Person me = new Person("Matthias", "test", "none", "08.01.1993");
+                result.add(new Content(me, record.get("description").asString()));
+            }
+            // You should capture any errors along with the query and data for traceability
+        } catch (Neo4jException ex) {
+            LOGGER.log(Level.SEVERE, query + " raised an exception", ex);
+            throw ex;
+        }
+        return result;
+    }
+
     public static void main(String... args) {
         // Aura queries use an encrypted connection using the "neo4j+s" protocol
         var uri = "neo4j+s://da4d5b39.databases.neo4j.io";
@@ -139,7 +191,12 @@ public class DriverIntroductionExample implements AutoCloseable {
         try (var app = new DriverIntroductionExample()) {
             //app.createFriendship("Alice", "David");
             //app.findPerson("Alice");
-            app.createPerson(new Person("Steven Hawking", "test", "none", "08.01.1942"));
+            //app.createPerson(new Person("Steven Hawking", "test", "none", "08.01.1942"));
+
+            Person me = new Person("Matthias", "test", "none", "08.01.1993");
+            //app.createPerson(me);
+            //app.createContent(new Content(me, "Am I an Engineer?"));
+            app.findContent();
         }
     }
 }

@@ -42,6 +42,6 @@ public class Person {
     }
 
     public void addContent(String contentDescription) {
-        contents.add(new Content(this, contentDescription));
+        new Content(this, contentDescription);
     }
 }
