@@ -23,8 +23,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -55,8 +58,8 @@ public class MainView extends VerticalLayout {
     private String ignoredText = "Ignoriert";
     private String declinedText = "Abgelehnt";
 
-
     public MainView() {
+        this.getElement().getThemeList().add(Lumo.DARK);
         add(createMenuBar());
         people = ExampleData.getExampleData();
         //showContentsGrid();
