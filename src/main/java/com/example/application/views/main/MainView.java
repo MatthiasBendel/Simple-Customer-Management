@@ -23,10 +23,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import java.time.Instant;
@@ -70,22 +68,26 @@ public class MainView extends VerticalLayout {
 
         headline = new H2("My Blog");
         add(headline);
-        MessageList list = new MessageList();
 
-        Instant yesterday = LocalDateTime.now().minusDays(1)
-                .toInstant(ZoneOffset.UTC);
-        ArrayList<MessageListItem> messageListItems = new ArrayList<>();
+        Instant yesterday = LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.UTC);
         for (int i = 0; i < people.size(); i++) {
             Person person = people.get(i);
             for (int j = 0; j < person.contents.size(); j++) {
+                System.out.println("Show content " + j + " of person " + i);
+                MessageList messages = new MessageList();
                 MessageListItem newMessage = new MessageListItem(person.contents.get(j).description(), yesterday,
                         person.getName());
                 newMessage.setUserColorIndex(i);
+                ArrayList<MessageListItem> messageListItems = new ArrayList<>();
                 messageListItems.add(newMessage);
+
+                ArrayList<Content> contents = new ArrayList<>();
+                contents.add(person.contents.get(j));
+                messages.setItems(messageListItems);
+                add(messages);
+                add(getContentsGrid(contents, true));
             }
         }
-        list.setItems(messageListItems);
-        add(list);
     }
 
     private MenuBar createMenuBar() {
@@ -100,7 +102,7 @@ public class MainView extends VerticalLayout {
             } else if ("Contents".equals(selected.getText())) {
                 if (personGrid != null)
                     hidePersonGrid();
-                showContentsGrid();
+                showContentGrid();
             }
         };
 
@@ -141,10 +143,11 @@ public class MainView extends VerticalLayout {
         remove(footer);
     }
 
-    private void showContentsGrid() {
+    private void showContentGrid() {
         headline = new H2("Inhalte");
         add(headline);
-        contentGrid = buildContentsGrid();
+        contentGrid = getContentsGrid(getContents(), false);
+        add(contentGrid);
         buildContentsFooterButtons();
     }
 
@@ -159,17 +162,20 @@ public class MainView extends VerticalLayout {
         return grid;
     }
 
-    private Grid<Content> buildContentsGrid() {
+    private Grid<Content> getContentsGrid(ArrayList<Content> contents, boolean small) {
         Grid<Content> grid = new Grid<>();
-        grid.setItems(getContents());
-        grid.addColumn(Content::creator).setHeader(creatorText);
-        grid.addColumn(Content::description).setHeader(descriptionText);
+        grid.setItems(contents);
+        if (!small) {
+            grid.addColumn(Content::creator).setHeader(creatorText);
+            grid.addColumn(Content::description).setHeader(descriptionText);
+        }
         grid.addColumn(Content::recommendation).setHeader(recommendationText);
         grid.addColumn(Content::accepted).setHeader(acceptedText);
         grid.addColumn(Content::acknowledged).setHeader(acknowledgedText);
         grid.addColumn(Content::ignored).setHeader(ignoredText);
         grid.addColumn(Content::declined).setHeader(declinedText);
-        add(grid);
+        if(contents.size() == 1)
+            grid.setHeight("100px");
         return grid;
     }
 
@@ -231,7 +237,7 @@ public class MainView extends VerticalLayout {
             }
             //contentGrid.getDataProvider().refreshAll();
             hideContentGrid();
-            showContentsGrid();
+            showContentGrid();
             dialog.close();
         });
         confirmButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);

@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 public class DriverIntroductionExample implements AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(DriverIntroductionExample.class.getName());
     private final Driver driver;
+    Person me = new Person("Matthias", "test", "none", "08.01.1993");
+
 
     public DriverIntroductionExample() {
         // Aura queries use an encrypted connection using the "neo4j+s" protocol
@@ -170,9 +172,8 @@ public class DriverIntroductionExample implements AutoCloseable {
             var records = session.executeRead(tx -> tx.run(query).list());
             for(Record record : records) {
                 System.out.printf("Found content: %s%n", record.get("description").asString());
-                Person me = new Person("Matthias", "test", "none", "08.01.1993");
                 result.add(new Content(me, record.get("description").asString()));
-            }
+            } //todo set correct person of content!
             // You should capture any errors along with the query and data for traceability
         } catch (Neo4jException ex) {
             LOGGER.log(Level.SEVERE, query + " raised an exception", ex);
@@ -193,7 +194,6 @@ public class DriverIntroductionExample implements AutoCloseable {
             //app.findPerson("Alice");
             //app.createPerson(new Person("Steven Hawking", "test", "none", "08.01.1942"));
 
-            Person me = new Person("Matthias", "test", "none", "08.01.1993");
             //app.createPerson(me);
             //app.createContent(new Content(me, "Am I an Engineer?"));
             app.findContent();
