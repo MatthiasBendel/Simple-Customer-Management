@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 public class DriverIntroductionExample implements AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(DriverIntroductionExample.class.getName());
     private final Driver driver;
-    Person me = new Person("Matthias", "test", "none", "08.01.1993");
 
 
     public DriverIntroductionExample() {
@@ -164,16 +163,17 @@ public class DriverIntroductionExample implements AutoCloseable {
         ArrayList<Content> result = new ArrayList<>();
         var query = new Query(
                 """
-                MATCH (c:CONTENT)
-                RETURN c.description AS description
+                MATCH (person)-[created:CREATED]->(content)
+                RETURN person.name AS name, created, content.description AS description
                 """);
 
         try (var session = driver.session(SessionConfig.forDatabase("neo4j"))) {
             var records = session.executeRead(tx -> tx.run(query).list());
             for(Record record : records) {
-                System.out.printf("Found content: %s%n", record.get("description").asString());
-                result.add(new Content(me, record.get("description").asString()));
-            } //todo set correct person of content!
+                String personName = record.get("name").asString();
+                System.out.printf("Found content %s%n", record.get("description").asString() + " from " + personName);
+                result.add(new Content(Person.getPerson(personName), record.get("description").asString()));
+            }
             // You should capture any errors along with the query and data for traceability
         } catch (Neo4jException ex) {
             LOGGER.log(Level.SEVERE, query + " raised an exception", ex);

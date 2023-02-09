@@ -10,12 +10,22 @@ public class Person {
     protected String mail;
     protected LocalDate birth;
     public ArrayList<Content> contents = new ArrayList<>();
+    public static ArrayList<Person> allPersons = new ArrayList<>();
 
     public Person(String name, String address, String mail, String birth) {
         this.name = name;
         this.address = address;
         this.mail = mail;
         this.birth = LocalDate.parse(birth, DateTimeFormatter.ofPattern("dd.MM.yyyy")); //birth == null ? "" : birth.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        allPersons.add(this);
+    }
+
+    public static Person getPerson(String personName) {
+        for (Person person: allPersons) {
+            if (person.name.equals(personName))
+                return person;
+        }
+        return new Person(personName, "", "", "");
     }
 
     public String getName(){
