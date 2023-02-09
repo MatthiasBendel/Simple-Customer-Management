@@ -12,7 +12,7 @@ public class ExampleData {
         */
         try (var app = new DriverIntroductionExample()) {
             people.addAll(app.findPersons());
-            people.addAll(addContentToPeople(people, app.findContent()));
+            people = addContentToPeople(people, app.findContent());
         }
         return people;
     }
